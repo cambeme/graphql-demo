@@ -146,81 +146,103 @@ export default class Body extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <div className="row">
-          <div className="col-md-12">
-            <Button
-              color="primary"
-              onClick={() => {
-                this.action = 'create';
-                this.toggle();
-              }}
-            >Create New User
-              </Button>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-md-12">
-            <Query query={USER_READ}>
-              {({ data, loading, error, refetch }) => {
-                this.refetch = refetch;
+        <Query query={USER_READ}>
+          {({ data, loading, error, refetch }) => {
+            this.refetch = refetch;
 
-                if (loading) {
-                  return <span>Loading ...</span>;
-                }
+            if (loading) {
+              return <span>Loading ...</span>;
+            }
 
-                if(error) {
-                  return <span>Error! Something happened!</span>;
-                }
+            if (error) {
+              if (error.graphQLErrors || error.networkError.message === 'Failed to fetch') {
+                return <span>Error! Can't connect to server!</span>
+              }
 
-                if (data && data.getUsers && data.getUsers.length > 0) {
-                  return (
-                    <table className="table table-dark table-hover text-center">
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {
-                          data.getUsers.map(el => (
-                            <tr key={`user-${el.id}`}>
-                              <td>
-                                {el.name}
-                              </td>
-                              <td>
-                                <ButtonGroup>
-                                  <Button
-                                    color="success"
-                                    onClick={() => {
-                                      this.action = 'update';
-                                      this.toggle(el.id, el.name);
-                                    }}>
-                                    Update
+              return <span>Error! Something happened!</span>;
+            }
+
+            if (data && data.getUsers && data.getUsers.length > 0) {
+              return (
+                <React.Fragment>
+                  <div className="row">
+                    <div className="col-md-12">
+                      <Button
+                        color="primary"
+                        onClick={() => {
+                          this.action = 'create';
+                          this.toggle();
+                        }}
+                      >
+                        Create New User
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <div className="col-md-12">
+                      <table className="table table-dark table-hover text-center">
+                        <thead>
+                          <tr>
+                            <th>Name</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {
+                            data.getUsers.map(el => (
+                              <tr key={`user-${el.id}`}>
+                                <td>
+                                  {el.name}
+                                </td>
+                                <td>
+                                  <ButtonGroup>
+                                    <Button
+                                      color="success"
+                                      onClick={() => {
+                                        this.action = 'update';
+                                        this.toggle(el.id, el.name);
+                                      }}>
+                                      Update
                                     </Button>
-                                  <Button
-                                    color="danger"
-                                    onClick={() => {
-                                      this.deleteUser(el.id)
-                                    }}>
-                                    Delete
+                                    <Button
+                                      color="danger"
+                                      onClick={() => {
+                                        this.deleteUser(el.id)
+                                      }}>
+                                      Delete
                                   </Button>
-                                </ButtonGroup>
-                              </td>
-                            </tr>
-                          ))
-                        }
-                      </tbody>
-                    </table>
-                  )
-                }
-                return (
-                  <div className="text-center">Don't have any user</div>
-                );
-              }}
-            </Query>
-          </div>
-        </div>
+                                  </ButtonGroup>
+                                </td>
+                              </tr>
+                            ))
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </React.Fragment>
+              )
+            }
+            return (
+              <React.Fragment>
+                <div className="row">
+                  <div className="col-md-12">
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        this.action = 'create';
+                        this.toggle();
+                      }}
+                    >
+                      Create New User
+                      </Button>
+                  </div>
+                </div>
+                <div className="text-center">Don't have any user</div>
+              </React.Fragment>
+            );
+          }}
+        </Query>
         <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
           <Form onSubmit={this.handleSubmit}>
             <ModalHeader toggle={this.toggle}>{this.action === 'create' ? 'New' : 'Update'} User</ModalHeader>

@@ -59,20 +59,21 @@ class CurrentTime extends React.Component {
 const Header = () => (
   <Query query={GET_TIME}>
     {({ data, loading, subscribeToMore }) => {
-      if (!data) {
-        return null;
-      }
 
       if (loading) {
         return <span>Loading ...</span>;
       }
 
-      return (
-        <CurrentTime
-          time={data.getTime}
-          subscribeToMore={subscribeToMore}
-        />
-      );
+      if (data && data.getTime) {
+        return (
+          <CurrentTime
+            time={data.getTime}
+            subscribeToMore={subscribeToMore}
+          />
+        );
+      }
+
+      return null;
     }}
   </Query>
 );

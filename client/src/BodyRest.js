@@ -133,7 +133,7 @@ export default class Body extends React.Component {
     }).then(res => res.json()).then(data => {
       this.setState({ users: data });
     }).catch(error => {
-      this.setState({error: error.message});
+      this.setState({ error: error.message });
     });
   }
 
@@ -144,20 +144,22 @@ export default class Body extends React.Component {
       <React.Fragment>
         <div className="row">
           <div className="col-md-12">
-            <Button
-              color="primary"
-              onClick={() => {
-                this.action = 'create';
-                this.toggle();
-              }}
-            >Create New User
-              </Button>
+            {
+              !error && (<Button
+                color="primary"
+                onClick={() => {
+                  this.action = 'create';
+                  this.toggle();
+                }}
+              >Create New User
+              </Button>)
+            }
           </div>
         </div>
         <div className="row">
           <div className="col-md-12">
             {
-              error ? <span>Error! Something happened!</span> :
+              error ? error === 'Failed to fetch' ? <span>Error! Can't connect to server!</span> : <span>Error! Something happened!</span> :
                 users.length > 0 ? (
                   <table className="table table-dark table-hover text-center">
                     <thead>

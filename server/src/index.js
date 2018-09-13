@@ -42,21 +42,47 @@ const typeDefs = gql`
   }
 `;
 
+const switchToRestAPI = false;
+
 const resolvers = {
   Query: {
     getTime: () => [],
-    getUsers: () => sampleData
-    // getUsers: () => {
-    //   return fetch('http://localhost:8001/users/', {
-    //     method: 'GET'
-    //   }).then(res => res.json());
-    // }
+    getUsers: async () => {
+      if (switchToRest === true) {
+        const userList = await fetch('http://localhost:8001/users/', {
+          method: 'GET'
+        }).then(res => res.json());
+
+        return userList;
+      }
+      return sampleData;
+    }
   },
   Mutation: {
-    createUser: (parent, { name }) => {
+    createUser: async (parent, { name }) => {
+      if (switchToRestAPI === true) {
+        const createdUser = await fetch('http://localhost:8001/user/create', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name })
+        }).then(res => res.json());
+
+        if(!createdUser.success) {
+          throw new Error('Tên người dùng đã tồn tại');
+        }
+
+        return {
+          id: createdUser.data.id,
+          name: createdUser.data.name,
+        }
+      }
+
       const findUser = sampleData.filter(el => el.name === name);
 
-      if(findUser.length > 0) {
+      if (findUser.length > 0) {
         throw new Error('Tên người dùng đã tồn tại');
       }
 
@@ -64,19 +90,39 @@ const resolvers = {
       userId = ++userId;
 
       return {
-        userId,
+        id: userId,
         name
       }
     },
-    updateUser: (parent, { id, name }) => {
+    updateUser: async (parent, { id, name }) => {
+      if (switchToRestAPI === true) {
+        const updatedUser = await fetch('http://localhost:8001/user/edit', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id, name })
+        }).then(res => res.json());
+
+        if(!updatedUser.success) {
+          throw new Error('Tên người dùng đã tồn tại');
+        }
+
+        return {
+          id: updatedUser.data.id,
+          name: updatedUser.data.name,
+        }
+      }
+
       const findUser = sampleData.filter(el => el.name === name && el.id !== id);
-      
-      if(findUser.length > 0) {
+
+      if (findUser.length > 0) {
         throw new Error('Tên người dùng đã tồn tại');
       }
 
       sampleData.forEach((ele, index) => {
-        if(ele.id === id) {
+        if (ele.id === id) {
           sampleData[index].name = name;
         }
       });
@@ -86,7 +132,26 @@ const resolvers = {
         name
       }
     },
-    deleteUser: (parent, { id }) => {
+    deleteUser: async (parent, { id }) => {
+      if (switchToRestAPI === true) {
+        const deletedUser = await fetch('http://localhost:8001/user/delete', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id })
+        }).then(res => res.json());
+
+        if(!deletedUser.success) {
+          throw new Error('Xoá người dùng thất bại');
+        }
+
+        return {
+          success: true
+        }
+      }
+
       sampleData = sampleData.filter(el => el.id !== id);
 
       return {
